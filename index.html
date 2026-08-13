@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<title>九九乘法表</title>
+<style>
+  :root{
+    --ink:#1a1a1a;
+    --muted:#8a8a8a;
+    --accent:#4f46e5;
+    --bg:#fafafa;
+    --surface:#ffffff;
+    --border:#e8e8e8;
+    --good:#16a34a;
+    --bad:#dc2626;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none!important;}
+  body{
+    margin:0;
+    font-family:"Microsoft JhengHei","PingFang TC",sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    padding:24px 16px;
+  }
+  h1{text-align:center;font-size:1.3rem;font-weight:600;margin:0 0 4px;}
+  .subtitle{text-align:center;color:var(--muted);font-size:0.85rem;margin-bottom:20px;}
+
+  .tabs{
+    max-width:720px;margin:0 auto 20px;
+    display:flex;gap:6px;justify-content:center;
+    border-bottom:1px solid var(--border);
+    padding-bottom:0;
+  }
+  .tab-btn{
+    background:none;border:none;color:var(--muted);
+    padding:10px 18px;font-size:0.95rem;font-weight:600;
+    cursor:pointer;border-bottom:2px solid transparent;
+    margin-bottom:-1px;
+  }
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+  .subnav{
+    display:flex;gap:4px;flex-wrap:wrap;justify-content:center;
+    margin-bottom:20px;
+  }
+  .subtab{
+    background:var(--surface);border:1px solid var(--border);color:var(--muted);
+    padding:6px 14px;border-radius:6px;font-size:0.85rem;cursor:pointer;
+  }
+  .subtab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+  .container{max-width:720px;margin:0 auto;}
+  .panel{
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    padding:24px;
+  }
+  .panel h2{margin:0 0 10px;font-size:1.05rem;font-weight:600;}
+  .panel p.desc{color:var(--muted);font-size:0.88rem;line-height:1.65;margin:0 0 16px;}
+
+  .btn{
+    padding:8px 16px;border:1px solid var(--ink);border-radius:6px;
+    background:var(--ink);color:#fff;font-size:0.88rem;cursor:pointer;
+  }
+  .btn:hover{opacity:0.85;}
+  .btn.ghost{background:#fff;color:var(--ink);}
+  select,input[type=number]{
+    padding:6px 10px;border-radius:6px;border:1px solid var(--border);font-size:0.95rem;width:76px;
+  }
+
+  .concept-demo{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;justify-content:center;}
+  .picker-group{display:flex;flex-direction:column;gap:6px;align-items:center;}
+  .picker-group label{font-size:0.8rem;color:var(--muted);}
+  .num-picker{display:flex;gap:4px;flex-wrap:wrap;max-width:220px;justify-content:center;}
+  .num-picker button{
+    width:30px;height:30px;border-radius:6px;border:1px solid var(--border);
+    background:#fff;cursor:pointer;font-size:0.85rem;color:var(--ink);
+  }
+  .num-picker button.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .dot-stage{background:var(--bg);border-radius:8px;padding:16px;min-width:240px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .dot-grid{display:flex;flex-direction:column;gap:4px;}
+  .dot-row{display:flex;gap:4px;}
+  .dot{width:14px;height:14px;border-radius:50%;background:var(--accent);}
+  .equation-box{text-align:center;font-size:1rem;font-weight:600;line-height:1.7;}
+  .equation-sub{font-size:0.85rem;color:var(--muted);font-weight:normal;}
+
+  .compare-grids{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;}
+  .compare-block{text-align:center;}
+  .compare-block .dot{width:11px;height:11px;}
+  .compare-block .dot-row{gap:3px;}
+  .compare-block .dot-grid{gap:3px;}
+
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;justify-content:center;}
+  label.inline{font-size:0.88rem;color:var(--muted);}
+
+  .numberline-wrap{overflow-x:auto;padding-bottom:6px;}
+  .numberline{display:flex;min-width:860px;padding:14px 0;}
+  .nl-cell{width:34px;text-align:center;}
+  .nl-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;background:#eee;color:var(--muted);font-size:0.75rem;}
+  .nl-dot.hit{background:var(--ink);color:#fff;}
+
+  .note{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:0.85rem;color:#555;margin-top:14px;}
+
+  .square-table{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+  .square-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center;min-width:68px;}
+  .square-item .val{font-size:1.05rem;font-weight:600;}
+  .square-item .last{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+
+  .chip-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+  .chip{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:3px 10px;font-size:0.85rem;}
+  .chip.common{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+  .tree-box{font-family:monospace;font-size:0.92rem;line-height:1.8;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;white-space:pre;overflow-x:auto;}
+
+  .longmult{font-family:monospace;font-size:1.25rem;text-align:right;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 22px;display:inline-block;min-width:170px;line-height:1.75;}
+  .longmult .line{border-top:1px solid var(--ink);margin-top:4px;padding-top:4px;}
+  .longmult-wrap{text-align:center;}
+
+  .ratio-bar{display:flex;height:28px;border-radius:6px;overflow:hidden;margin-top:12px;max-width:360px;}
+  .ratio-bar div{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:0.82rem;}
+
+  .row-select{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;justify-content:center;}
+  .row-select button{
+    padding:8px 15px;border:1px solid var(--border);background:#fff;color:var(--ink);
+    border-radius:6px;cursor:pointer;font-size:1rem;font-weight:600;
+  }
+  .row-select button.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .mult-list{max-width:320px;margin:0 auto;}
+  .mult-row{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 4px;border-bottom:1px solid var(--border);font-size:1.15rem;font-weight:600;
+  }
+  .mult-row:last-child{border-bottom:none;}
+  .mult-row.playing{color:var(--accent);}
+  .mult-row .speak-btn{
+    border:1px solid var(--border);background:#fff;color:var(--ink);width:30px;height:30px;border-radius:50%;
+    cursor:pointer;font-size:0.85rem;flex-shrink:0;
+  }
+  .mult-row .speak-btn:hover{background:var(--ink);color:#fff;}
+
+  .quiz-box{text-align:center;position:relative;overflow:hidden;}
+  .quiz-question{font-size:1.6rem;font-weight:700;margin:16px 0 4px;}
+  .quiz-sub{font-size:0.88rem;color:var(--muted);margin-bottom:10px;}
+  .quiz-input{font-size:1.3rem;width:110px;text-align:center;padding:6px;border:1px solid var(--border);border-radius:6px;}
+  .quiz-stats{display:flex;justify-content:center;align-items:center;gap:20px;flex-wrap:wrap;margin:12px 0;font-size:0.85rem;color:var(--muted);}
+  .quiz-stats span b{color:var(--ink);font-size:1.05rem;}
+  .coin-stat{display:flex;align-items:center;gap:5px;}
+  .reset-coins{border:0;background:none;color:var(--muted);font-size:0.7rem;padding:2px 3px;cursor:pointer;text-decoration:underline;}
+  .reset-coins:hover{color:var(--bad);}
+  .feedback{min-height:26px;font-size:1.05rem;font-weight:600;margin-top:8px;}
+  .feedback.good{color:var(--good);}
+  .feedback.bad{color:var(--bad);}
+  .quiz-controls{margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .quiz-types{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:14px;font-size:0.8rem;color:var(--muted);}
+  .quiz-types label{display:flex;align-items:center;gap:4px;border:1px solid var(--border);padding:4px 9px;border-radius:6px;}
+  .quiz-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+  .mode-btn{min-height:50px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--muted);font-size:.92rem;font-weight:700;cursor:pointer;padding:8px;}
+  .mode-btn.active{background:#eef2ff;color:var(--accent);border-color:#a5b4fc;box-shadow:0 0 0 2px #eef2ff;}
+  .mode-note{display:block;font-size:.7rem;font-weight:400;margin-top:2px;}
+  .difficulty-box{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin:0 0 12px;font-size:.8rem;color:var(--muted);}
+  .difficulty-btn{border:1px solid var(--border);border-radius:16px;background:#fff;padding:6px 11px;cursor:pointer;color:var(--muted);}
+  .difficulty-btn.active{background:#f3f0ff;border-color:#c4b5fd;color:#5b21b6;font-weight:700;}
+  .challenge-only.is-hidden,.learning-only.is-hidden{display:none!important;}
+  .visual-hint{display:none;max-width:520px;margin:12px auto 4px;padding:14px;background:#f2f7ff;border:1px solid #dbeafe;border-radius:12px;text-align:center;line-height:1.65;}
+  .visual-hint.show{display:block;animation:hintIn .3s ease-out;}
+  .visual-hint.level-2{background:#fff9e8;border-color:#fde7a8;}
+  .visual-hint.level-3{background:#f7f1ff;border-color:#e3d3ff;}
+  .quiz-dot-grid{display:grid;gap:6px;justify-content:center;width:max-content;max-width:100%;margin:0 auto 10px;}
+  .quiz-dot{width:clamp(14px,var(--dot-size,22px),22px);height:clamp(14px,var(--dot-size,22px),22px);border-radius:50%;background:var(--accent);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35);}
+  .hint-copy{font-size:.93rem;color:#414a5a;}
+  .hint-copy strong{color:var(--ink);}
+  .factor-hint{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:left;}
+  .factor-set{background:rgba(255,255,255,.7);padding:10px;border-radius:8px;}
+  .factor-set h3{font-size:.88rem;margin:0 0 6px;}
+  .factor-chip{display:inline-block;padding:2px 6px;margin:2px;border-radius:10px;background:#fff;border:1px solid #d7ddea;}
+  .factor-chip.common{background:#e9ddff;border-color:#bba4ee;font-weight:700;}
+  .visual-question-stage{margin:10px auto 8px;}
+  .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:390px;margin:10px auto;}
+  .choice-btn{min-height:44px;border:1px solid #cdd5e1;background:#fff;border-radius:8px;font-size:1rem;cursor:pointer;}
+  .choice-btn.selected{border-color:var(--accent);background:#eef2ff;color:var(--accent);font-weight:700;}
+  .learning-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .learning-success{animation:successPop .65s ease-out;}
+  @keyframes hintIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  @keyframes successPop{0%{transform:scale(.9)}55%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+  .reward-layer{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;}
+  .reward-layer.show{opacity:1;}
+  .reward-card{position:relative;z-index:2;background:rgba(255,255,255,.96);border:1px solid var(--border);border-radius:14px;padding:16px 22px;box-shadow:0 12px 35px rgba(0,0,0,.16);font-weight:800;color:var(--good);}
+  .reward-bill{display:block;width:86px;max-height:52px;object-fit:contain;margin:0 auto 7px;filter:drop-shadow(0 4px 5px rgba(0,0,0,.18));}
+  .reward-amount{display:inline-block;font-size:1.45rem;}
+  .reward-layer.reward-1.show{animation:rewardFade 1s ease both;}
+  .reward-layer.reward-10.show{animation:rewardFade 1.65s ease both;}
+  .reward-layer.reward-100.show{animation:rewardFade 2s ease both;}
+  .reward-10 .reward-card{color:#b76e00;border-color:#f1c453;}
+  .reward-100 .reward-card{color:#9a5b00;border:2px solid #ffd34e;box-shadow:0 0 28px rgba(255,193,7,.65);}
+  .reward-10 .reward-amount,.reward-100 .reward-amount{animation:rewardJump .65s cubic-bezier(.2,.8,.25,1.35);}
+  .reward-100::before{content:"";position:absolute;inset:0;background:white;animation:jackpotFlash .55s ease-out both;}
+  .reward-particle{position:absolute;left:50%;top:50%;z-index:1;font-size:1.25rem;animation:particleBurst 1.4s ease-out both;}
+  .milestone-toast{position:absolute;z-index:12;left:50%;top:12px;transform:translateX(-50%);max-width:90%;background:var(--ink);color:#fff;border-radius:20px;padding:8px 15px;font-size:.86rem;font-weight:700;box-shadow:0 5px 18px rgba(0,0,0,.2);animation:milestoneFade 2s ease both;pointer-events:none;white-space:nowrap;}
+  @keyframes rewardFade{0%{opacity:0;transform:scale(.75)}15%,72%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.04)}}
+  @keyframes rewardJump{0%{transform:scale(.5)}45%{transform:scale(1.45) rotate(-3deg)}70%{transform:scale(.92) rotate(2deg)}100%{transform:scale(1)}}
+  @keyframes jackpotFlash{0%{opacity:.95}100%{opacity:0}}
+  @keyframes particleBurst{0%{opacity:1;transform:translate(-50%,-50%) scale(.4) rotate(0)}100%{opacity:0;transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(1.15) rotate(var(--r))}}
+  @keyframes milestoneFade{0%{opacity:0;transform:translate(-50%,-8px)}12%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-5px)}}
+  @media(max-width:480px){.quiz-box{padding:18px 12px}.quiz-stats{gap:9px 14px}.reward-card{max-width:88%;padding:14px 16px}.milestone-toast{white-space:normal;width:max-content;text-align:center}.quiz-mode-switch{gap:6px}.mode-btn{font-size:.84rem}.factor-hint{grid-template-columns:1fr}.choice-grid{grid-template-columns:1fr 1fr}.quiz-dot-grid{gap:4px}.quiz-controls .btn,.learning-actions .btn{min-height:42px}}
+
+  footer{text-align:center;color:var(--muted);font-size:0.78rem;margin-top:20px;}
+  .auth-screen{min-height:75vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .auth-card{width:min(100%,380px);background:#fff;border:1px solid var(--border);border-radius:14px;padding:26px;box-shadow:0 12px 35px rgba(0,0,0,.07);text-align:center;}
+  .auth-card h2{margin:0 0 6px}.auth-card p{color:var(--muted);font-size:.85rem;line-height:1.6;}
+  .auth-form{display:grid;gap:10px;margin-top:18px;text-align:left;}
+  .auth-form label{font-size:.8rem;color:var(--muted)}
+  .auth-form input{width:100%;padding:11px;border:1px solid var(--border);border-radius:7px;font-size:1rem;}
+  .auth-error{min-height:22px;color:var(--bad);font-size:.82rem;text-align:center;}
+  .app-account-bar{max-width:720px;margin:0 auto 10px;display:flex;justify-content:flex-end;align-items:center;gap:8px;font-size:.75rem;color:var(--muted);}
+  .sync-status{padding:3px 8px;border-radius:12px;background:#f3f4f6;}.sync-status.offline{background:#fff7df;color:#8a6200;}
+  .logout-btn{border:0;background:none;text-decoration:underline;color:var(--muted);cursor:pointer;font-size:.75rem;}
+</style>
+</head>
+<body>
+
+<div class="auth-screen" id="loadingScreen">
+  <div class="auth-card"><h2>九九乘法表</h2><p>資料載入中…</p></div>
+</div>
+<div class="auth-screen" id="loginScreen" hidden>
+  <div class="auth-card">
+    <h2>歡迎回來</h2><p>登入後，手機和平板會共用金幣與挑戰紀錄。</p>
+    <form class="auth-form" id="loginForm">
+      <label>帳號（6–8 碼英文字母或數字）<input type="text" id="loginEmail" autocomplete="username" maxlength="8" required></label>
+      <label>密碼（6–8 碼）<input type="password" id="loginPassword" autocomplete="current-password" minlength="6" maxlength="8" required></label>
+      <button type="submit" class="btn" id="loginBtn">登入</button>
+      <button type="button" class="btn ghost" id="registerBtn">建立帳號</button>
+      <div class="auth-error" id="loginError" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+<div id="appShell" hidden>
+<div class="app-account-bar"><span id="userEmail"></span><span class="sync-status" id="syncStatus">☁ 同步中…</span><button type="button" class="logout-btn" id="logoutBtn">登出</button></div>
+
+<h1>九九乘法表</h1>
+<p class="subtitle">從乘法表出發，理解背後的數學基礎</p>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="multable">乘法表</button>
+  <button class="tab-btn" data-tab="basic">基礎</button>
+  <button class="tab-btn" data-tab="advanced">進階</button>
+  <button class="tab-btn" data-tab="quiz">測驗</button>
+</div>
+
+<div class="container">
+
+  <div class="tab-content" id="tab-multable">
+    <div class="panel">
+      <div class="row-select" id="rowSelect"></div>
+      <div class="controls">
+        <button class="btn" id="playRowBtn">▶ 全部朗讀</button>
+        <button class="btn ghost" id="stopBtn">⏹ 停止</button>
+        <label class="inline"><input type="checkbox" id="chantMode"> 口訣念法</label>
+      </div>
+      <div class="mult-list" id="multList"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-basic" style="display:none;">
+    <div class="subnav" id="basicSubnav">
+      <button class="subtab active" data-sub="concept">乘法概念</button>
+      <button class="subtab" data-sub="dots">點陣探索</button>
+      <button class="subtab" data-sub="patterns">規律發現</button>
+    </div>
+
+    <div class="panel subpanel" id="sub-concept">
+      <h2>乘法概念</h2>
+      <p class="desc">乘法是「重複加法」的簡便寫法。3 個 4，就是 4 連續加 3 次：4+4+4=12，寫成 3 × 4 = 12。</p>
+      <div class="concept-demo">
+        <div class="picker-group">
+          <label>組數 (a)</label>
+          <div class="num-picker" id="conceptAPicker"></div>
+          <label style="margin-top:4px;">每組個數 (b)</label>
+          <div class="num-picker" id="conceptBPicker"></div>
+        </div>
+        <div class="dot-stage">
+          <div class="dot-grid" id="conceptDots"></div>
+          <div class="equation-box" id="conceptEq"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel subpanel" id="sub-dots" style="display:none;">
+      <h2>點陣探索</h2>
+      <p class="desc">同一組點陣圖，可以同時看成「重複加法」與「乘法算式」兩種寫法。</p>
+      <div class="concept-demo">
+        <div class="picker-group">
+          <label>a</label>
+          <div class="num-picker" id="dotsAPicker"></div>
+          <label style="margin-top:4px;">b</label>
+          <div class="num-picker" id="dotsBPicker"></div>
+          <button class="btn ghost" id="dotsSpeakBtn" style="margin-top:8px;">🔊 唸出算式</button>
+        </div>
+        <div class="dot-stage">
+          <div class="dot-grid" id="dotsGrid"></div>
+          <div class="equation-box">
+            <div id="dotsAddition"></div>
+            <div class="equation-sub" id="dotsMultiply"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel subpanel" id="sub-patterns" style="display:none;">
+      <h2>規律發現</h2>
+      <p class="desc"><b>交換律：</b>把點陣圖轉個方向，總數不變，這就是 3×4 和 4×3 答案一樣的原因。</p>
+      <div class="controls">
+        <label class="inline">a =</label><select id="commA"></select>
+        <label class="inline">b =</label><select id="commB"></select>
+        <button class="btn ghost" id="commShowBtn">比較</button>
+      </div>
+      <div class="compare-grids" id="commResult"></div>
+
+      <p class="desc" style="margin-top:20px;"><b>跳數規律：</b>選一段（2〜9），數線用跳格方式顯示這段的每個乘積。</p>
+      <div class="controls">
+        <select id="skipSelect">
+          <option value="2">2的倍數</option><option value="3">3的倍數</option><option value="4">4的倍數</option>
+          <option value="5">5的倍數</option><option value="6">6的倍數</option><option value="7">7的倍數</option>
+          <option value="8">8的倍數</option><option value="9">9的倍數</option>
+        </select>
+        <button class="btn ghost" id="skipShowBtn">顯示</button>
+        <button class="btn" id="skipPlayBtn">▶ 動畫播放</button>
+      </div>
+      <div class="numberline-wrap"><div class="numberline" id="numberline"></div></div>
+      <div class="note">九九乘法表左上到右下的對角線（1×1、2×2…9×9）是「平方數」，整張表以這條線對稱 —— 這正是交換律的結果。</div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-advanced" style="display:none;">
+    <div class="subnav" id="advSubnav">
+      <button class="subtab active" data-sub="longmult">多位數乘法</button>
+      <button class="subtab" data-sub="factors">倍數與因數</button>
+      <button class="subtab" data-sub="gcf">公因數</button>
+      <button class="subtab" data-sub="primetree">質因數分解</button>
+      <button class="subtab" data-sub="squares">平方數</button>
+      <button class="subtab" data-sub="sqrt">開根號</button>
+      <button class="subtab" data-sub="ratio">比與比值</button>
+    </div>
+
+    <div class="panel subpanel" id="sub-longmult">
+      <h2>多位數乘法（直式乘法）</h2>
+      <p class="desc">多位數乘法是把九九乘法表用很多次，再把結果對齊位數相加。</p>
+      <div class="controls">
+        <label class="inline">A</label><input type="number" id="lmA" value="23" min="1" max="99">
+        <label class="inline">B</label><input type="number" id="lmB" value="14" min="1" max="99">
+        <button class="btn ghost" id="lmShowBtn">顯示</button>
+      </div>
+      <div class="longmult-wrap"><div class="longmult" id="longmultBox"></div></div>
+    </div>
+
+    <div class="panel subpanel" id="sub-factors" style="display:none;">
+      <h2>倍數與因數</h2>
+      <p class="desc"><b>倍數：</b>一個數乘以 1、2、3…的結果。<b>因數：</b>能整除這個數、沒有餘數的數字。</p>
+      <div class="controls">
+        <input type="number" id="factorInput" value="12" min="1" max="100">
+        <button class="btn ghost" id="factorShowBtn">分析</button>
+      </div>
+      <p class="desc" style="margin:10px 0 0;font-weight:600;color:var(--ink);">因數</p>
+      <div class="chip-list" id="factorChips"></div>
+      <p class="desc" style="margin:14px 0 0;font-weight:600;color:var(--ink);">倍數（× 1〜10）</p>
+      <div class="chip-list" id="multipleChips"></div>
+    </div>
+
+    <div class="panel subpanel" id="sub-gcf" style="display:none;">
+      <h2>公因數與最大公因數</h2>
+      <p class="desc">兩個數共同擁有的因數叫公因數，其中最大的一個是「最大公因數」(GCF)。</p>
+      <div class="controls">
+        <label class="inline">A</label><input type="number" id="gcfA" value="12" min="1" max="100">
+        <label class="inline">B</label><input type="number" id="gcfB" value="18" min="1" max="100">
+        <button class="btn ghost" id="gcfShowBtn">找出公因數</button>
+      </div>
+      <div id="gcfResult"></div>
+    </div>
+
+    <div class="panel subpanel" id="sub-primetree" style="display:none;">
+      <h2>分解質因數</h2>
+      <p class="desc">大於 1 的數都能拆成一串「質數」相乘。質數只能被 1 和自己整除（如 2、3、5、7、11…）。</p>
+      <div class="controls">
+        <input type="number" id="primeInput" value="60" min="2" max="200">
+        <button class="btn ghost" id="primeShowBtn">分解</button>
+      </div>
+      <div class="tree-box" id="primeTree"></div>
+    </div>
+
+    <div class="panel subpanel" id="sub-squares" style="display:none;">
+      <h2>平方數與規律</h2>
+      <p class="desc">一個數自己乘自己叫「平方數」，寫作 n²。觀察每個平方數的「個位數」，會發現對稱規律。</p>
+      <div class="square-table" id="squareTable"></div>
+      <div class="note" id="squareNote"></div>
+    </div>
+
+    <div class="panel subpanel" id="sub-sqrt" style="display:none;">
+      <h2>開根號（平方根）</h2>
+      <p class="desc">開根號是平方的反運算：4×4=16，「16 開根號」就是找回原本的 4，寫作 √16 = 4。</p>
+      <div class="controls">
+        <select id="sqrtSelect"></select>
+        <button class="btn ghost" id="sqrtRevealBtn">揭曉答案</button>
+        <button class="btn" id="sqrtSpeakBtn">🔊 唸出來</button>
+      </div>
+      <div class="equation-box" id="sqrtResult" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="panel subpanel" id="sub-ratio" style="display:none;">
+      <h2>比與比值</h2>
+      <p class="desc">「比」用來比較兩個數量，例如 6:9。兩邊同除以最大公因數，就能化成最簡單的比。</p>
+      <div class="controls">
+        <label class="inline">A</label><input type="number" id="ratioA" value="6" min="1" max="100">
+        <label class="inline">B</label><input type="number" id="ratioB" value="9" min="1" max="100">
+        <button class="btn ghost" id="ratioShowBtn">化簡</button>
+      </div>
+      <div class="equation-box" id="ratioResult" style="margin-top:8px;"></div>
+      <div class="ratio-bar" id="ratioBar"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-quiz" style="display:none;">
+    <div class="panel quiz-box">
+      <div class="quiz-mode-switch" aria-label="測驗模式">
+        <button type="button" class="mode-btn active" data-mode="learning">📘 學習模式<span class="mode-note">看圖理解，可以再試一次</span></button>
+        <button type="button" class="mode-btn" data-mode="challenge">🎮 挑戰模式<span class="mode-note">連勝挑戰，答題賺金幣</span></button>
+      </div>
+      <div class="difficulty-box learning-only" id="difficultyBox">
+        <span>難度</span>
+        <button type="button" class="difficulty-btn active" data-level="beginner">🌱 入門</button>
+        <button type="button" class="difficulty-btn" data-level="familiar">🌿 熟悉</button>
+        <button type="button" class="difficulty-btn" data-level="advanced">🌳 進階</button>
+      </div>
+      <div class="quiz-types">
+        <label><input type="checkbox" class="qtype" value="mul" checked> 乘法</label>
+        <label><input type="checkbox" class="qtype" value="concept" checked> 倍數</label>
+        <label><input type="checkbox" class="qtype" value="fill" checked> 填空</label>
+        <label><input type="checkbox" class="qtype" value="square" checked> 平方數</label>
+        <label><input type="checkbox" class="qtype" value="sqrt" checked> 開根號</label>
+        <label><input type="checkbox" class="qtype" value="gcf"> 最大公因數</label>
+        <label class="learning-only"><input type="checkbox" class="qtype learning-type" value="visual" checked> 看圖算數學</label>
+      </div>
+      <div class="quiz-stats challenge-only is-hidden">
+        <span>已答：<b id="statTotal">0</b></span>
+        <span>答對：<b id="statCorrect">0</b></span>
+        <span>連對：<b id="statStreak">0</b></span>
+        <span class="coin-stat">💰 金幣：<b id="statCoins">0</b> 元 <button type="button" class="reset-coins" id="resetCoinsBtn">重設金幣</button></span>
+      </div>
+      <div class="quiz-question" id="quizQuestion">按「開始學習」出題</div>
+      <div class="quiz-sub" id="quizSub"></div>
+      <div class="visual-question-stage" id="visualQuestionStage"></div>
+      <div><input type="number" class="quiz-input" id="quizInput" placeholder="?" disabled></div>
+      <div class="choice-grid" id="choiceGrid" style="display:none;"></div>
+      <div class="visual-hint" id="visualHint" aria-live="polite"></div>
+      <div class="feedback" id="quizFeedback"></div>
+      <div class="quiz-controls">
+        <button class="btn" id="startQuizBtn">開始測驗</button>
+        <button class="btn ghost" id="submitBtn" disabled>確認答案</button>
+        <button class="btn ghost" id="speakQuestionBtn" disabled>🔊 唸題目</button>
+        <button class="btn ghost learning-only" id="hintBtn" disabled>💡 看提示</button>
+        <button class="btn ghost learning-only" id="nextQuestionBtn" disabled>下一題</button>
+      </div>
+      <div class="reward-layer" id="rewardLayer" aria-live="polite"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>使用瀏覽器內建語音朗讀，若無聲音請確認裝置音量或瀏覽器語音設定</footer>
+</div>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
+    document.getElementById('tab-'+btn.dataset.tab).style.display='block';
+  });
+});
+function setupSubnav(navId){
+  const nav = document.getElementById(navId);
+  nav.querySelectorAll('.subtab').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      nav.querySelectorAll('.subtab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      nav.parentElement.querySelectorAll('.subpanel').forEach(p=>p.style.display='none');
+      document.getElementById('sub-'+btn.dataset.sub).style.display='block';
+    });
+  });
+}
+setupSubnav('basicSubnav');
+setupSubnav('advSubnav');
+
+function speak(text, rate=0.9){
+  return new Promise((resolve)=>{
+    if(!('speechSynthesis' in window)){ resolve(); return; }
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'zh-TW'; utter.rate = rate;
+    utter.onend = resolve; utter.onerror = resolve;
+    window.speechSynthesis.speak(utter);
+  });
+}
+function stopSpeak(){ if('speechSynthesis' in window){ window.speechSynthesis.cancel(); } }
+
+const CN_NUM = ['','一','二','三','四','五','六','七','八','九','十'];
+function toChineseNum(n){
+  if(n===0) return '零';
+  if(n <= 10) return CN_NUM[n];
+  if(n < 20) return '十' + CN_NUM[n-10];
+  if(n < 100){ const t=Math.floor(n/10),u=n%10; return CN_NUM[t]+'十'+(u?CN_NUM[u]:''); }
+  return String(n);
+}
+function plainReading(a,b){ return `${toChineseNum(a)} 乘以 ${toChineseNum(b)} 等於 ${toChineseNum(a*b)}`; }
+function chantReading(a,b){
+  const p=a*b;
+  if(p<10) return `${toChineseNum(a)}${toChineseNum(b)}得${toChineseNum(p)}`;
+  return `${toChineseNum(a)}${toChineseNum(b)}${toChineseNum(p)}`;
+}
+function makeDotGrid(container, rows, cols){
+  container.innerHTML = '';
+  for(let r=0;r<rows;r++){
+    const rowEl = document.createElement('div'); rowEl.className='dot-row';
+    for(let c=0;c<cols;c++){
+      const dot = document.createElement('div'); dot.className='dot';
+      rowEl.appendChild(dot);
+    }
+    container.appendChild(rowEl);
+  }
+}
+function makeNumPicker(container, min, max, defaultVal, onChange){
+  container.innerHTML = '';
+  let current = defaultVal;
+  for(let i=min;i<=max;i++){
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    if(i===defaultVal) btn.classList.add('active');
+    btn.addEventListener('click', ()=>{
+      current = i;
+      [...container.children].forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      onChange(current);
+    });
+    container.appendChild(btn);
+  }
+  return ()=>current;
+}
+function gcd(a,b){ return b===0 ? a : gcd(b, a%b); }
+function getFactors(n){
+  const res=[];
+  for(let i=1;i<=n;i++){ if(n%i===0) res.push(i); }
+  return res;
+}
+function primeFactorize(n){
+  const res=[]; let x=n;
+  for(let p=2;p*p<=x;p++){ while(x%p===0){ res.push(p); x/=p; } }
+  if(x>1) res.push(x);
+  return res;
+}
+
+const rowSelectEl = document.getElementById('rowSelect');
+const multList = document.getElementById('multList');
+let selectedRow = 2;
+function renderMultList(){
+  multList.innerHTML = '';
+  for(let j=1;j<=9;j++){
+    const row = document.createElement('div');
+    row.className = 'mult-row';
+    row.id = `mult-row-${j}`;
+    row.innerHTML = `<span>${selectedRow} × ${j} = ${selectedRow*j}</span>
+      <button class="speak-btn" data-b="${j}">🔊</button>`;
+    multList.appendChild(row);
+  }
+}
+for(let n=2;n<=9;n++){
+  const btn = document.createElement('button');
+  btn.textContent = n;
+  if(n===2) btn.classList.add('active');
+  btn.addEventListener('click', ()=>{
+    selectedRow = n;
+    document.querySelectorAll('#rowSelect button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderMultList();
+  });
+  rowSelectEl.appendChild(btn);
+}
+renderMultList();
+multList.addEventListener('click', (e)=>{
+  const btn = e.target.closest('.speak-btn');
+  if(!btn) return;
+  const b = parseInt(btn.dataset.b);
+  const useChant = document.getElementById('chantMode').checked;
+  speak(useChant ? chantReading(selectedRow,b) : plainReading(selectedRow,b));
+});
+let isPlaying = false;
+document.getElementById('playRowBtn').addEventListener('click', async ()=>{
+  if(isPlaying) return;
+  isPlaying = true;
+  const useChant = document.getElementById('chantMode').checked;
+  for(let j=1;j<=9;j++){
+    if(!isPlaying) break;
+    document.querySelectorAll('.mult-row').forEach(r=>r.classList.remove('playing'));
+    document.getElementById(`mult-row-${j}`).classList.add('playing');
+    await speak(useChant ? chantReading(selectedRow,j) : plainReading(selectedRow,j));
+    await new Promise(r=>setTimeout(r, 250));
+  }
+  document.querySelectorAll('.mult-row').forEach(r=>r.classList.remove('playing'));
+  isPlaying = false;
+});
+document.getElementById('stopBtn').addEventListener('click', ()=>{
+  isPlaying = false; stopSpeak();
+  document.querySelectorAll('.mult-row').forEach(r=>r.classList.remove('playing'));
+});
+
+let conceptA = 3, conceptB = 4;
+function renderConcept(){
+  makeDotGrid(document.getElementById('conceptDots'), conceptA, conceptB);
+  const additionStr = Array(conceptA).fill(conceptB).join(' + ');
+  document.getElementById('conceptEq').innerHTML =
+    `${conceptA} 個 ${conceptB}，也就是<br>${additionStr} = ${conceptA*conceptB}<br>
+     <span class="equation-sub">${conceptA} × ${conceptB} = ${conceptA*conceptB}</span>`;
+}
+makeNumPicker(document.getElementById('conceptAPicker'),1,9,conceptA,(v)=>{conceptA=v;renderConcept();});
+makeNumPicker(document.getElementById('conceptBPicker'),1,9,conceptB,(v)=>{conceptB=v;renderConcept();});
+renderConcept();
+
+let dotsA = 3, dotsB = 4;
+function renderDotsSection(){
+  makeDotGrid(document.getElementById('dotsGrid'), dotsA, dotsB);
+  const additionStr = Array(dotsA).fill(dotsB).join(' + ');
+  document.getElementById('dotsAddition').textContent = `${additionStr} = ${dotsA*dotsB}`;
+  document.getElementById('dotsMultiply').textContent = `${dotsA} × ${dotsB} = ${dotsA*dotsB}`;
+}
+makeNumPicker(document.getElementById('dotsAPicker'),1,9,dotsA,(v)=>{dotsA=v;renderDotsSection();});
+makeNumPicker(document.getElementById('dotsBPicker'),1,9,dotsB,(v)=>{dotsB=v;renderDotsSection();});
+renderDotsSection();
+document.getElementById('dotsSpeakBtn').addEventListener('click', ()=>{
+  speak(`${toChineseNum(dotsA)} 個 ${toChineseNum(dotsB)}，${plainReading(dotsA,dotsB)}`);
+});
+
+const commASel = document.getElementById('commA');
+const commBSel = document.getElementById('commB');
+for(let i=1;i<=9;i++){
+  commASel.innerHTML += `<option value="${i}" ${i===3?'selected':''}>${i}</option>`;
+  commBSel.innerHTML += `<option value="${i}" ${i===4?'selected':''}>${i}</option>`;
+}
+function renderCommutative(){
+  const a = parseInt(commASel.value), b = parseInt(commBSel.value);
+  const result = document.getElementById('commResult');
+  result.innerHTML = `
+    <div class="compare-block"><div class="dot-grid" id="commGrid1"></div>
+      <div style="margin-top:6px;font-weight:600;">${a} × ${b} = ${a*b}</div></div>
+    <div class="compare-block"><div class="dot-grid" id="commGrid2"></div>
+      <div style="margin-top:6px;font-weight:600;">${b} × ${a} = ${b*a}</div></div>`;
+  makeDotGrid(document.getElementById('commGrid1'), a, b);
+  makeDotGrid(document.getElementById('commGrid2'), b, a);
+}
+document.getElementById('commShowBtn').addEventListener('click', renderCommutative);
+renderCommutative();
+
+function renderNumberline(n, highlightUpTo=9){
+  const nl = document.getElementById('numberline');
+  nl.innerHTML = '';
+  for(let i=0;i<=90;i++){
+    const isHit = i>0 && i<=n*9 && i%n===0 && (i/n)<=highlightUpTo;
+    const cell = document.createElement('div'); cell.className='nl-cell';
+    const dot = document.createElement('div'); dot.className='nl-dot'+(isHit?' hit':'');
+    dot.textContent = i; cell.appendChild(dot); nl.appendChild(cell);
+  }
+}
+document.getElementById('skipShowBtn').addEventListener('click', ()=>{
+  renderNumberline(parseInt(document.getElementById('skipSelect').value));
+});
+renderNumberline(2);
+document.getElementById('skipPlayBtn').addEventListener('click', async ()=>{
+  const n = parseInt(document.getElementById('skipSelect').value);
+  for(let k=1;k<=9;k++){
+    renderNumberline(n, k);
+    await speak(`${toChineseNum(n)}${toChineseNum(k)}${toChineseNum(n*k)}`, 1.1);
+    await new Promise(r=>setTimeout(r,150));
+  }
+});
+
+function renderSquares(){
+  const box = document.getElementById('squareTable');
+  box.innerHTML = '';
+  for(let n=1;n<=9;n++){
+    const sq = n*n;
+    const div = document.createElement('div');
+    div.className = 'square-item';
+    div.innerHTML = `<div class="val">${n}² = ${sq}</div><div class="last">個位數 ${sq%10}</div>`;
+    box.appendChild(div);
+  }
+  document.getElementById('squareNote').textContent =
+    '個位數依序：1、4、9、6、5、6、9、4、1 —— 前四個和後四個左右對稱，這是平方數結尾的規律。';
+}
+renderSquares();
+
+const sqrtSelect = document.getElementById('sqrtSelect');
+for(let n=1;n<=9;n++){ sqrtSelect.innerHTML += `<option value="${n}">${n*n}</option>`; }
+function renderSqrt(reveal){
+  const n = parseInt(sqrtSelect.value);
+  const sq = n*n;
+  document.getElementById('sqrtResult').innerHTML = reveal
+    ? `√${sq} = ${n} <span class="equation-sub">(${n} × ${n} = ${sq})</span>`
+    : `√${sq} = ?`;
+}
+document.getElementById('sqrtSelect').addEventListener('change', ()=>renderSqrt(false));
+document.getElementById('sqrtRevealBtn').addEventListener('click', ()=>renderSqrt(true));
+document.getElementById('sqrtSpeakBtn').addEventListener('click', ()=>{
+  const n = parseInt(sqrtSelect.value), sq = n*n;
+  speak(`${toChineseNum(sq)} 開根號等於 ${toChineseNum(n)}，因為 ${toChineseNum(n)} 乘以 ${toChineseNum(n)} 等於 ${toChineseNum(sq)}`);
+});
+renderSqrt(false);
+
+function renderFactors(){
+  const n = Math.max(1, Math.min(100, parseInt(document.getElementById('factorInput').value)||1));
+  const factors = getFactors(n);
+  document.getElementById('factorChips').innerHTML = factors.map(f=>`<span class="chip">${f}</span>`).join('');
+  let mults = [];
+  for(let k=1;k<=10;k++) mults.push(n*k);
+  document.getElementById('multipleChips').innerHTML = mults.map(m=>`<span class="chip">${m}</span>`).join('');
+}
+document.getElementById('factorShowBtn').addEventListener('click', renderFactors);
+renderFactors();
+
+function renderGCF(){
+  const a = Math.max(1, Math.min(100, parseInt(document.getElementById('gcfA').value)||1));
+  const b = Math.max(1, Math.min(100, parseInt(document.getElementById('gcfB').value)||1));
+  const fa = getFactors(a), fb = getFactors(b);
+  const common = fa.filter(f=>fb.includes(f));
+  const g = gcd(a,b);
+  document.getElementById('gcfResult').innerHTML = `
+    <p class="desc">${a} 的因數：${fa.map(f=>`<span class="chip${common.includes(f)?' common':''}">${f}</span>`).join(' ')}</p>
+    <p class="desc">${b} 的因數：${fb.map(f=>`<span class="chip${common.includes(f)?' common':''}">${f}</span>`).join(' ')}</p>
+    <div class="note">公因數：${common.join('、')}　最大公因數 = <b>${g}</b></div>`;
+}
+document.getElementById('gcfShowBtn').addEventListener('click', renderGCF);
+renderGCF();
+
+function renderPrimeTree(){
+  const n = Math.max(2, Math.min(200, parseInt(document.getElementById('primeInput').value)||2));
+  const factors = primeFactorize(n);
+  let lines = [`${n}`];
+  let remaining = n;
+  let indent = '';
+  factors.forEach((p, idx)=>{
+    const next = remaining / p;
+    lines.push(`${indent}└─ ${p}  ×  ${next}`);
+    indent += '   ';
+    remaining = next;
+  });
+  const expr = factors.join(' × ');
+  document.getElementById('primeTree').textContent = lines.join('\n') + `\n\n${n} = ${expr}`;
+}
+document.getElementById('primeShowBtn').addEventListener('click', renderPrimeTree);
+renderPrimeTree();
+
+function renderLongMult(){
+  const a = Math.max(1, Math.min(99, parseInt(document.getElementById('lmA').value)||1));
+  const b = Math.max(1, Math.min(99, parseInt(document.getElementById('lmB').value)||1));
+  const bTens = Math.floor(b/10), bOnes = b%10;
+  const box = document.getElementById('longmultBox');
+  let html = `  ${a}<br>× ${b}<br><div class="line"></div>`;
+  if(bTens===0){
+    html += `${a*bOnes}`;
+  } else {
+    const p1 = a*bOnes, p2 = a*bTens;
+    html += `${p1}<br>${p2}0<br><div class="line"></div>${a*b}`;
+  }
+  box.innerHTML = html;
+}
+document.getElementById('lmShowBtn').addEventListener('click', renderLongMult);
+renderLongMult();
+
+function renderRatio(){
+  const a = Math.max(1, Math.min(100, parseInt(document.getElementById('ratioA').value)||1));
+  const b = Math.max(1, Math.min(100, parseInt(document.getElementById('ratioB').value)||1));
+  const g = gcd(a,b);
+  const sa = a/g, sb = b/g;
+  document.getElementById('ratioResult').innerHTML =
+    `${a} : ${b} 化簡為 <b>${sa} : ${sb}</b> <span class="equation-sub">(除以 ${g})</span>`;
+  document.getElementById('ratioBar').innerHTML = `
+    <div style="flex:${sa};background:#333;">${sa}</div>
+    <div style="flex:${sb};background:#999;">${sb}</div>`;
+}
+document.getElementById('ratioShowBtn').addEventListener('click', renderRatio);
+renderRatio();
+
+let currentAnswer=0, currentType='mul', currentQuestion=null;
+let total=0, correct=0, streak=0, hintLevel=0, learningAttempts=0;
+let correctSinceBonus=0;
+let quizMode='learning', learningDifficulty='beginner', selectedChoice=null;
+let coins = loadCoins();
+let questionSettled = true;
+let nextQuestionTimer = null;
+let rewardTimer = null;
+const quizQuestion = document.getElementById('quizQuestion');
+const quizSub = document.getElementById('quizSub');
+const quizInput = document.getElementById('quizInput');
+const quizFeedback = document.getElementById('quizFeedback');
+const submitBtn = document.getElementById('submitBtn');
+const startQuizBtn = document.getElementById('startQuizBtn');
+const speakQuestionBtn = document.getElementById('speakQuestionBtn');
+const statCoins = document.getElementById('statCoins');
+const rewardLayer = document.getElementById('rewardLayer');
+const visualHint = document.getElementById('visualHint');
+const visualQuestionStage = document.getElementById('visualQuestionStage');
+const choiceGrid = document.getElementById('choiceGrid');
+const hintBtn = document.getElementById('hintBtn');
+const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+
+function loadCoins(){
+  try{
+    const saved = Number(localStorage.getItem('mathCoins'));
+    return Number.isFinite(saved) && saved >= 0 ? Math.floor(saved) : 0;
+  } catch(e){ return 0; }
+}
+function addCoins(amount){
+  coins += amount;
+  statCoins.textContent = coins;
+  try{ localStorage.setItem('mathCoins', String(coins)); } catch(e){}
+  if(window.FirebaseSync) window.FirebaseSync.addCoinsToCloud(amount);
+}
+function calculateReward(currentStreak){
+  let tenChance=0.10,hundredChance=0.005;
+  if(currentStreak>=20){tenChance=0.30;hundredChance=0.05;}
+  else if(currentStreak>=15){tenChance=0.25;hundredChance=0.03;}
+  else if(currentStreak>=10){tenChance=0.20;hundredChance=0.02;}
+  else if(currentStreak>=5){tenChance=0.15;hundredChance=0.01;}
+  const roll = Math.random();
+  if(roll < hundredChance) return 100;
+  if(roll < hundredChance + tenChance) return 10;
+  return 1;
+}
+function calculateChallengeReward(currentStreak){
+  correctSinceBonus++;
+  let reward=calculateReward(currentStreak);
+  if(reward!==100&&reward!==10&&correctSinceBonus>=5)reward=10;
+  if(reward>=10)correctSinceBonus=0;
+  return reward;
+}
+function showRewardAnimation(amount){
+  clearTimeout(rewardTimer);
+  rewardLayer.className = `reward-layer reward-${amount}`;
+  rewardLayer.innerHTML = '';
+  const card = document.createElement('div');
+  card.className = 'reward-card';
+  const messages = {
+    1:'答對了！ +1 元',
+    10:'🎉 太棒了！獲得 10 元！',
+    100:'✨ JACKPOT！獲得 100 元！ ✨'
+  };
+  card.innerHTML = `<img class="reward-bill" src="${amount}.png" alt="${amount} 元"><span class="reward-amount">${messages[amount]}</span>`;
+  rewardLayer.appendChild(card);
+  const particleCount = amount===100 ? 26 : amount===10 ? 14 : 0;
+  for(let i=0;i<particleCount;i++){
+    const particle = document.createElement('span');
+    particle.className = 'reward-particle';
+    particle.textContent = amount===100 ? (i%2 ? '★' : '◆') : '●';
+    const angle = (Math.PI*2*i/particleCount) + Math.random()*.25;
+    const distance = 75 + Math.random()*(amount===100 ? 125 : 75);
+    particle.style.setProperty('--x', `${Math.cos(angle)*distance}px`);
+    particle.style.setProperty('--y', `${Math.sin(angle)*distance}px`);
+    particle.style.setProperty('--r', `${Math.round(Math.random()*300-150)}deg`);
+    particle.style.color = ['#f5b700','#ff7a00','#ef476f','#4f46e5'][i%4];
+    rewardLayer.appendChild(particle);
+  }
+  void rewardLayer.offsetWidth;
+  rewardLayer.classList.add('show');
+  rewardTimer = setTimeout(()=>{
+    rewardLayer.className = 'reward-layer';
+    rewardLayer.innerHTML = '';
+  }, amount===100 ? 2000 : amount===10 ? 1650 : 1000);
+}
+function showMilestone(currentStreak){
+  const messages = {
+    5:'🔥 連對 5 題！',
+    10:'🔥 連對 10 題！10 元獎勵機率提升！',
+    20:'🔥 連對 20 題！幸運值提升！',
+    30:'👑 連對 30 題！100 元大獎已解鎖！',
+    50:'👑 超強連勝！100 元機率繼續提升！'
+  };
+  if(!messages[currentStreak]) return;
+  document.querySelectorAll('.milestone-toast').forEach(el=>el.remove());
+  const toast = document.createElement('div');
+  toast.className = 'milestone-toast';
+  toast.textContent = messages[currentStreak];
+  document.querySelector('.quiz-box').appendChild(toast);
+  setTimeout(()=>toast.remove(), 2000);
+}
+statCoins.textContent = coins;
+
+function getEnabledTypes(){
+  return [...document.querySelectorAll('.qtype:checked')]
+    .map(c=>c.value).filter(type=>quizMode==='learning' || type!=='visual');
+}
+function randomInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function generateDotArray(rows,cols){
+  const grid=document.createElement('div');
+  grid.className='quiz-dot-grid';
+  const available=Math.min(22,Math.max(14,Math.floor(255/Math.max(cols,rows))));
+  grid.style.setProperty('--dot-size',`${available}px`);
+  grid.style.gridTemplateColumns=`repeat(${cols},var(--dot-size))`;
+  for(let i=0;i<rows*cols;i++){
+    const dot=document.createElement('span'); dot.className='quiz-dot'; grid.appendChild(dot);
+  }
+  return grid;
+}
+function factorMarkup(n,common){
+  return getFactors(n).map(v=>`<span class="factor-chip ${common.includes(v)?'common':''}">${v}</span>`).join('');
+}
+function generateFactorHint(a,b){
+  const common=getFactors(a).filter(v=>b%v===0);
+  const wrap=document.createElement('div'); wrap.className='factor-hint';
+  wrap.innerHTML=`<div class="factor-set"><h3>${a} 的因數</h3>${factorMarkup(a,common)}</div><div class="factor-set"><h3>${b} 的因數</h3>${factorMarkup(b,common)}</div>`;
+  return wrap;
+}
+function renderVisualHint(questionData,level){
+  if(!questionData) return;
+  visualHint.innerHTML='';
+  visualHint.className=`visual-hint show level-${level}`;
+  const {type,a,b,product,n,x,y,missA}=questionData;
+  if(type==='gcf'){
+    visualHint.appendChild(generateFactorHint(x,y));
+    visualHint.insertAdjacentHTML('beforeend',`<div class="hint-copy">${level<3?'找找看兩邊都有，而且最大的是哪一個？':`完整解答：${x} 和 ${y} 的最大公因數是 <strong>${currentAnswer}</strong>`}</div>`);
+    return;
+  }
+  const rows=type==='square'||type==='sqrt'?n:a;
+  const cols=type==='square'||type==='sqrt'?n:b;
+  visualHint.appendChild(generateDotArray(rows,cols));
+  let copy='';
+  if(type==='mul') copy=level===1?`${a} 組，每組 ${b} 個。數一數一共有多少個？`:level===2?`${Array(a).fill(b).join(' + ')} = ?`:`${Array(a).fill(b).join(' + ')} = ${product}<br><strong>${a} × ${b} = ${product}</strong>`;
+  if(type==='concept') copy=level===1?`每一組有 ${b} 個，共有 ${a} 組。`:level===2?`${Array(a).fill(b).join(' + ')} = ?`:`${Array(a).fill(b).join(' + ')} = ${product}<br><strong>${a} 個 ${b} 是 ${product}</strong>`;
+  if(type==='fill'&&missA) copy=level===1?`每組有 ${b} 個，總共有 ${product} 個。數一數有幾組？`:level===2?`每次圈出 ${b} 個，一共可以圈出幾組？`:`完整解答：<strong>${a} × ${b} = ${product}</strong>`;
+  if(type==='fill'&&!missA) copy=level===1?`${product} 個點分成 ${a} 組。每一組有幾個？`:level===2?`把 ${product} 平均分成 ${a} 組，再數每一組。`:`完整解答：<strong>${a} × ${b} = ${product}</strong>`;
+  if(type==='square') copy=level===1?`${n}² 就是 ${n} × ${n}。數一數一共有多少個？`:level===2?`${Array(n).fill(n).join(' + ')} = ?`:`完整解答：<strong>${n}² = ${n*n}</strong>`;
+  if(type==='sqrt') copy=level===1?`這是 ${n} 排、每排 ${n} 個，共 ${n*n} 個點。哪一個數字乘自己會得到 ${n*n}？`:level===2?`? × ? = ${n*n}<br>兩個問號是同一個數。`:`完整解答：<strong>${n} × ${n} = ${n*n}，所以 √${n*n} = ${n}</strong>`;
+  visualHint.insertAdjacentHTML('beforeend',`<div class="hint-copy">${copy}</div>`);
+}
+function showHint(){
+  if(quizMode!=='learning'||!currentQuestion) return;
+  hintLevel=Math.min(3,hintLevel+1);
+  renderVisualHint(currentQuestion,hintLevel);
+  hintBtn.textContent=hintLevel<3?'💡 再多一點提示':'💡 已顯示完整解答';
+  hintBtn.disabled=hintLevel>=3;
+}
+function createChoices(correct,rows,cols){
+  const pool=[correct,`${rows} + ${cols}`,`${cols} − ${rows}`,`${rows} ÷ ${cols}`];
+  return pool.sort(()=>Math.random()-.5);
+}
+function renderChoices(choices){
+  selectedChoice=null; choiceGrid.innerHTML=''; choiceGrid.style.display='grid'; quizInput.parentElement.style.display='none';
+  choices.forEach((choice,i)=>{
+    const btn=document.createElement('button'); btn.type='button'; btn.className='choice-btn';
+    btn.textContent=`${String.fromCharCode(65+i)}. ${choice}`; btn.dataset.value=choice;
+    btn.addEventListener('click',()=>{choiceGrid.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');selectedChoice=choice;});
+    choiceGrid.appendChild(btn);
+  });
+}
+function generateVisualQuestion(min,max){
+  const rows=randomInt(min,max),cols=randomInt(min,max);
+  const kinds=['formula','groups','perGroup','sequence'];
+  const kind=kinds[randomInt(0,kinds.length-1)];
+  const q={type:'visual',a:rows,b:cols,product:rows*cols,visualKind:kind,sequenceStep:kind==='sequence'?1:0};
+  return q;
+}
+function renderVisualQuestion(q){
+  visualQuestionStage.innerHTML=''; visualQuestionStage.appendChild(generateDotArray(q.a,q.b));
+  if(q.visualKind==='formula'||q.sequenceStep===3){
+    quizQuestion.textContent=q.visualKind==='sequence'?'可以寫成哪個乘法算式？':'這張圖可以寫成哪個算式？';
+    q.answer=`${q.a} × ${q.b}`; currentAnswer=q.answer; renderChoices(createChoices(q.answer,q.a,q.b));
+  }else{
+    choiceGrid.style.display='none'; quizInput.parentElement.style.display='block'; quizInput.type='number';
+    if(q.visualKind==='groups'||q.sequenceStep===2){quizQuestion.textContent='這裡有幾組？';q.answer=q.a;}
+    else{quizQuestion.textContent='每一組有幾個？';q.answer=q.b;}
+    currentAnswer=q.answer;
+  }
+  quizSub.textContent=q.visualKind==='sequence'?`圖 → 加法 → 乘法（第 ${q.sequenceStep} 步／3）`:'先看圖，再想一想';
+}
+function buildQuestion(type,min,max){
+  const a=randomInt(min,max),b=randomInt(min,max),product=a*b;
+  if(type==='visual') return generateVisualQuestion(min,max);
+  if(type==='mul') return {type,a,b,product,answer:product,text:`${a} × ${b} = ?`,sub:''};
+  if(type==='concept') return {type,a,b,product,answer:product,text:`${a} 個 ${b} 是多少？`,sub:quizMode==='challenge'?`提示：${Array(a).fill(b).join(' + ')} = ?`:''};
+  if(type==='fill'){const missA=Math.random()<.5;return {type,a,b,product,missA,answer:missA?a:b,text:missA?`? × ${b} = ${product}`:`${a} × ? = ${product}`,sub:'想想看缺少的是哪個數字'};}
+  if(type==='square'){const n=randomInt(min,max);return {type,n,answer:n*n,text:`${n}² = ?`,sub:quizMode==='challenge'?`提示：${n} × ${n}`:''};}
+  if(type==='sqrt'){const n=randomInt(min,max);return {type,n,answer:n,text:`√${n*n} = ?`,sub:'哪個數字自己乘自己會得到這個數？'};}
+  const x=randomInt(2,21),y=randomInt(2,21);return {type:'gcf',x,y,answer:gcd(x,y),text:`${x} 和 ${y} 的最大公因數是？`,sub:'找出兩數共同因數中最大的那個'};
+}
+function updateModeUI(){
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===quizMode));
+  document.querySelectorAll('.learning-only').forEach(el=>el.classList.toggle('is-hidden',quizMode!=='learning'));
+  document.querySelectorAll('.challenge-only').forEach(el=>el.classList.toggle('is-hidden',quizMode!=='challenge'));
+  startQuizBtn.textContent=quizMode==='learning'?'開始學習':'開始挑戰';
+}
+function newQuestion(){
+  clearTimeout(nextQuestionTimer);
+  const types = getEnabledTypes();
+  if(types.length===0){
+    questionSettled = true;
+    quizQuestion.textContent='請至少勾選一種題型';
+    quizInput.disabled = true;
+    submitBtn.disabled = true;
+    speakQuestionBtn.disabled = true;
+    return;
+  }
+  currentType = types[Math.floor(Math.random()*types.length)];
+  if(quizMode==='learning'&&learningDifficulty==='beginner'&&Math.random()<.55) currentType='visual';
+  const min=quizMode==='learning'&&learningDifficulty==='beginner'?1:quizMode==='learning'?2:1;
+  const max=quizMode==='learning'&&learningDifficulty==='beginner'?5:9;
+  currentQuestion=buildQuestion(currentType,min,max); currentAnswer=currentQuestion.answer;
+  hintLevel=0; learningAttempts=0; selectedChoice=null;
+  visualQuestionStage.innerHTML=''; visualHint.innerHTML=''; visualHint.className='visual-hint';
+  choiceGrid.innerHTML=''; choiceGrid.style.display='none'; quizInput.parentElement.style.display='block';
+  if(currentType==='visual') renderVisualQuestion(currentQuestion);
+  else{quizQuestion.textContent=currentQuestion.text;quizSub.textContent=currentQuestion.sub;}
+  quizInput.value = '';
+  questionSettled = false;
+  quizInput.disabled = false;
+  quizInput.focus();
+  submitBtn.disabled = false;
+  speakQuestionBtn.disabled = false;
+  quizFeedback.textContent = '';
+  quizFeedback.className = 'feedback';
+  hintBtn.disabled=quizMode!=='learning'; hintBtn.textContent='💡 看提示'; nextQuestionBtn.disabled=quizMode!=='learning';
+  if(quizMode==='learning'&&learningDifficulty==='beginner'&&currentType!=='visual') showHint();
+}
+function readAnswer(){ return choiceGrid.style.display==='grid'?selectedChoice:parseInt(quizInput.value); }
+function prepareRetry(){questionSettled=false;quizInput.disabled=false;submitBtn.disabled=false;quizInput.value='';if(choiceGrid.style.display==='grid')selectedChoice=null;else quizInput.focus();}
+function handleLearningAnswer(value){
+  if(value===currentAnswer){
+    if(currentQuestion.type==='visual'&&currentQuestion.visualKind==='sequence'&&currentQuestion.sequenceStep<3){
+      currentQuestion.sequenceStep++;
+      if(currentQuestion.sequenceStep===3) visualQuestionStage.insertAdjacentHTML('beforeend',`<div class="hint-copy"><strong>${Array(currentQuestion.a).fill(currentQuestion.b).join(' + ')} = ${currentQuestion.product}</strong></div>`);
+      quizFeedback.textContent='對，就是這樣！下一步看看。';quizFeedback.className='feedback learning-success';
+      setTimeout(()=>{renderVisualQuestion(currentQuestion);prepareRetry();quizFeedback.textContent='';},700);return;
+    }
+    total++;correct++;
+    const messages=['你看懂了！','對，就是這樣！','你找到規律了！','算對了！','這題會了！'];
+    const message=messages[randomInt(0,messages.length-1)];quizFeedback.textContent=message;quizFeedback.className='feedback learning-success';speak(message);
+    nextQuestionTimer=setTimeout(newQuestion,1300);return;
+  }
+  learningAttempts++;
+  if(learningAttempts===1){
+    quizFeedback.textContent='再看看圖，可以再想一次。';quizFeedback.className='feedback';speak('再看看圖，可以再想一次。');
+    if(currentQuestion.type!=='visual'){hintLevel=Math.max(1,hintLevel);renderVisualHint(currentQuestion,hintLevel);}
+    prepareRetry();return;
+  }
+  if(hintLevel<2&&currentQuestion.type!=='visual'){hintLevel=2;renderVisualHint(currentQuestion,hintLevel);}
+  else if(hintLevel<3&&currentQuestion.type!=='visual'){hintLevel=3;renderVisualHint(currentQuestion,hintLevel);}
+  total++;quizFeedback.textContent=`答案是 ${currentAnswer}，我們下一題再試試看！`;quizFeedback.className='feedback';speak(`答案是${currentAnswer}，我們下一題再試試看！`);nextQuestionTimer=setTimeout(newQuestion,1500);
+}
+function handleChallengeAnswer(value){
+  total++;
+  if(value===currentAnswer){
+    correct++;streak++;const reward=calculateChallengeReward(streak);addCoins(reward);if(window.FirebaseSync)window.FirebaseSync.updateBestStreak(streak);quizFeedback.textContent=`答對了！ +${reward} 元`;quizFeedback.className='feedback good';showRewardAnimation(reward);showMilestone(streak);speak(reward===1?'答對了！獲得一元':`答對了！獲得${toChineseNum(reward)}元`);
+  }else{streak=0;quizFeedback.textContent=`答錯了，正確答案是 ${currentAnswer}。連勝中斷，再來一次！`;quizFeedback.className='feedback bad';speak(`答錯了，正確答案是 ${toChineseNum(currentAnswer)}。連勝中斷，再來一次！`);}
+  if(window.FirebaseSync)window.FirebaseSync.recordAnswer(value===currentAnswer);
+  document.getElementById('statTotal').textContent=total;document.getElementById('statCorrect').textContent=correct;document.getElementById('statStreak').textContent=streak;nextQuestionTimer=setTimeout(newQuestion,1300);
+}
+function checkAnswer(){
+  if(questionSettled || quizInput.disabled) return;
+  const val=readAnswer();
+  if(val===null||Number.isNaN(val)){
+    quizFeedback.textContent = '請輸入答案！';
+    quizFeedback.className = 'feedback';
+    return;
+  }
+  questionSettled = true;
+  quizInput.disabled = true;
+  submitBtn.disabled = true;
+  if(quizMode==='learning') handleLearningAnswer(val); else handleChallengeAnswer(val);
+}
+startQuizBtn.addEventListener('click', ()=>{
+  clearTimeout(nextQuestionTimer);
+  total=0; correct=0; streak=0;
+  document.getElementById('statTotal').textContent = 0;
+  document.getElementById('statCorrect').textContent = 0;
+  document.getElementById('statStreak').textContent = 0;
+  newQuestion();
+});
+submitBtn.addEventListener('click', checkAnswer);
+quizInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') checkAnswer(); });
+choiceGrid.addEventListener('keydown',(e)=>{if(e.key==='Enter')checkAnswer();});
+hintBtn.addEventListener('click',showHint);
+nextQuestionBtn.addEventListener('click',()=>{clearTimeout(nextQuestionTimer);newQuestion();});
+document.querySelectorAll('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>{
+  quizMode=btn.dataset.mode;clearTimeout(nextQuestionTimer);questionSettled=true;quizInput.disabled=true;submitBtn.disabled=true;speakQuestionBtn.disabled=true;hintBtn.disabled=true;nextQuestionBtn.disabled=true;visualHint.className='visual-hint';visualQuestionStage.innerHTML='';choiceGrid.style.display='none';quizFeedback.textContent='';quizQuestion.textContent=quizMode==='learning'?'準備好後，按「開始學習」':'準備好後，按「開始挑戰」';quizSub.textContent='';updateModeUI();
+}));
+document.querySelectorAll('.difficulty-btn').forEach(btn=>btn.addEventListener('click',()=>{learningDifficulty=btn.dataset.level;document.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.toggle('active',b===btn));}));
+document.getElementById('resetCoinsBtn').addEventListener('click', ()=>{
+  if(confirm(`確定要把目前 ${coins} 元重設為 0 嗎？`)){
+    coins = 0;
+    statCoins.textContent = coins;
+    try{ localStorage.setItem('mathCoins', '0'); } catch(e){}
+    if(window.FirebaseSync) window.FirebaseSync.resetCoinsInCloud();
+  }
+});
+speakQuestionBtn.addEventListener('click', ()=>{
+  speak(quizQuestion.textContent.replace('?','多少').replace('²','的平方'));
+});
+updateModeUI();
+window.addEventListener('firebase-user-data',event=>{
+  const data=event.detail||{};
+  if(Number.isFinite(data.coins)){
+    coins=Math.max(0,Math.floor(data.coins));statCoins.textContent=coins;
+    try{localStorage.setItem('mathCoins',String(coins));}catch(e){}
+  }
+});
+</script>
+<script type="module">
+// ===== Firebase Web App Config（請貼上 Firebase Console 提供的設定）=====
+// 這是公開的 Web SDK 識別設定；絕對不要放入 service account 或 private key。
+const firebaseConfig = {
+  apiKey: "AIzaSyCnUqBM6ncnjwWnuWExQYeURr5z60eVW0Q",
+  authDomain: "elementary-chinese.firebaseapp.com",
+  projectId: "elementary-chinese",
+  storageBucket: "elementary-chinese.firebasestorage.app",
+  messagingSenderId: "237168327274",
+  appId: "1:237168327274:web:65db5b436b8fb03e9a6813"
+};
+
+const loadingScreen=document.getElementById('loadingScreen');
+const loginScreen=document.getElementById('loginScreen');
+const appShell=document.getElementById('appShell');
+const loginForm=document.getElementById('loginForm');
+const loginError=document.getElementById('loginError');
+const loginBtn=document.getElementById('loginBtn');
+const registerBtn=document.getElementById('registerBtn');
+const syncStatus=document.getElementById('syncStatus');
+const userEmail=document.getElementById('userEmail');
+let auth=null,db=null,currentUid=null,bestStreak=0,unsubscribeUser=null;
+let sdk=null;
+
+function updateSyncStatus(status){
+  const labels={synced:'☁ 已同步',syncing:'☁ 同步中…',offline:'⚠ 離線',pending:'⚠ 尚未同步'};
+  syncStatus.textContent=labels[status]||status;
+  syncStatus.classList.toggle('offline',status==='offline'||status==='pending');
+}
+function cacheKey(uid){return `mathPending:${uid}`;}
+function readPending(uid){
+  try{return JSON.parse(localStorage.getItem(cacheKey(uid)))||{coins:0,totalAnswered:0,totalCorrect:0,bestStreak:0};}
+  catch(e){return {coins:0,totalAnswered:0,totalCorrect:0,bestStreak:0};}
+}
+function writePending(uid,pending){try{localStorage.setItem(cacheKey(uid),JSON.stringify(pending));}catch(e){}}
+function saveLocalCache(data){
+  try{
+    if(Number.isFinite(data.coins))localStorage.setItem('mathCoins',String(data.coins));
+    localStorage.setItem('mathStats',JSON.stringify({totalAnswered:data.totalAnswered||0,totalCorrect:data.totalCorrect||0,bestStreak:data.bestStreak||0}));
+  }catch(e){}
+}
+function emitUserData(data){window.dispatchEvent(new CustomEvent('firebase-user-data',{detail:data}));}
+function isConfigured(){return firebaseConfig.apiKey&&!firebaseConfig.apiKey.startsWith('PASTE_')&&firebaseConfig.projectId&&!firebaseConfig.projectId.startsWith('PASTE_');}
+function mathUserRef(uid){return sdk.doc(db,'users',uid,'apps','math');}
+function showLogin(message=''){
+  loadingScreen.hidden=true;appShell.hidden=true;loginScreen.hidden=false;loginError.textContent=message;userEmail.textContent='';
+}
+function showApp(user){loadingScreen.hidden=true;loginScreen.hidden=true;appShell.hidden=false;userEmail.textContent=(user.email||'').split('@')[0];}
+function friendlyAuthError(error){
+  const messages={'auth/invalid-credential':'帳號或密碼不正確。','auth/invalid-email':'帳號格式不正確。','auth/email-already-in-use':'這個帳號已經建立過。','auth/weak-password':'密碼強度不足，請輸入 6–8 個字元。','auth/too-many-requests':'嘗試次數過多，請稍後再試。','auth/network-request-failed':'網路連線失敗，請檢查連線。'};
+  return messages[error.code]||'登入失敗，請稍後再試。';
+}
+async function createUserDataIfNeeded(uid){
+  const ref=mathUserRef(uid);
+  await sdk.runTransaction(db,async transaction=>{
+    const snap=await transaction.get(ref);
+    if(!snap.exists())transaction.set(ref,{coins:0,totalAnswered:0,totalCorrect:0,bestStreak:0,updatedAt:sdk.serverTimestamp()});
+  });
+}
+async function loadUserData(uid){
+  updateSyncStatus('syncing');
+  await createUserDataIfNeeded(uid);
+  const ref=mathUserRef(uid);
+  if(unsubscribeUser)unsubscribeUser();
+  unsubscribeUser=sdk.onSnapshot(ref,snapshot=>{
+    if(!snapshot.exists())return;
+    const data=snapshot.data();bestStreak=Number(data.bestStreak)||0;saveLocalCache(data);emitUserData(data);updateSyncStatus(snapshot.metadata.hasPendingWrites?'syncing':'synced');
+  },error=>{console.error('Firestore listener failed:',error);updateSyncStatus(navigator.onLine?'pending':'offline');});
+  await flushPendingWrites();
+}
+function queueDelta(delta){
+  if(!currentUid)return;
+  const pending=readPending(currentUid);
+  pending.coins+=(delta.coins||0);pending.totalAnswered+=(delta.totalAnswered||0);pending.totalCorrect+=(delta.totalCorrect||0);pending.bestStreak=Math.max(pending.bestStreak||0,delta.bestStreak||0);
+  writePending(currentUid,pending);updateSyncStatus(navigator.onLine?'pending':'offline');
+}
+async function applyIncrement(delta){
+  if(!currentUid||!navigator.onLine){queueDelta(delta);return false;}
+  updateSyncStatus('syncing');
+  const update={updatedAt:sdk.serverTimestamp()};
+  if(delta.coins)update.coins=sdk.increment(delta.coins);
+  if(delta.totalAnswered)update.totalAnswered=sdk.increment(delta.totalAnswered);
+  if(delta.totalCorrect)update.totalCorrect=sdk.increment(delta.totalCorrect);
+  try{await sdk.updateDoc(mathUserRef(currentUid),update);updateSyncStatus('synced');return true;}
+  catch(error){console.error('Firestore increment failed:',error);queueDelta(delta);return false;}
+}
+async function addCoinsToCloud(amount){return applyIncrement({coins:amount});}
+async function recordAnswer(isCorrect){return applyIncrement({totalAnswered:1,totalCorrect:isCorrect?1:0});}
+async function updateBestStreak(value){
+  if(!currentUid||value<=bestStreak)return;
+  bestStreak=value;
+  if(!navigator.onLine){queueDelta({bestStreak:value});return;}
+  try{
+    updateSyncStatus('syncing');const ref=mathUserRef(currentUid);
+    await sdk.runTransaction(db,async transaction=>{const snap=await transaction.get(ref);const cloudBest=Number(snap.data()?.bestStreak)||0;if(value>cloudBest)transaction.update(ref,{bestStreak:value,updatedAt:sdk.serverTimestamp()});});
+    updateSyncStatus('synced');
+  }catch(error){console.error('bestStreak update failed:',error);queueDelta({bestStreak:value});}
+}
+async function resetCoinsInCloud(){
+  if(!currentUid)return;
+  const pending=readPending(currentUid);pending.coins=0;writePending(currentUid,pending);
+  if(!navigator.onLine){updateSyncStatus('offline');return;}
+  try{updateSyncStatus('syncing');await sdk.updateDoc(mathUserRef(currentUid),{coins:0,updatedAt:sdk.serverTimestamp()});updateSyncStatus('synced');}
+  catch(error){console.error('coins reset failed:',error);updateSyncStatus('pending');}
+}
+async function flushPendingWrites(){
+  if(!currentUid||!navigator.onLine)return;
+  const uid=currentUid,pending=readPending(uid);
+  if(!pending.coins&&!pending.totalAnswered&&!pending.totalCorrect&&!pending.bestStreak)return;
+  const incrementPart={coins:pending.coins,totalAnswered:pending.totalAnswered,totalCorrect:pending.totalCorrect};
+  writePending(uid,{coins:0,totalAnswered:0,totalCorrect:0,bestStreak:0});
+  const ok=await applyIncrement(incrementPart);
+  if(!ok)return;
+  if(pending.bestStreak)await updateBestStreak(pending.bestStreak);
+}
+function syntheticEmail(username){return username.toLowerCase()+'@elementary-chinese.app';}
+function validateAccount(username,password){
+  if(!/^[A-Za-z0-9]{6,8}$/.test(username))return '帳號必須是 6–8 碼英文字母或數字。';
+  if(password.length<6||password.length>8)return '密碼必須是 6–8 碼。';
+  return '';
+}
+async function loginUser(username,password){await sdk.setPersistence(auth,sdk.browserLocalPersistence);return sdk.signInWithEmailAndPassword(auth,syntheticEmail(username),password);}
+async function registerUser(username,password){await sdk.setPersistence(auth,sdk.browserLocalPersistence);return sdk.createUserWithEmailAndPassword(auth,syntheticEmail(username),password);}
+async function logoutUser(){if(unsubscribeUser){unsubscribeUser();unsubscribeUser=null;}await sdk.signOut(auth);}
+async function handleAuthState(user){
+  if(!user){currentUid=null;showLogin();return;}
+  currentUid=user.uid;showApp(user);
+  try{await loadUserData(user.uid);}catch(error){console.error('User data load failed:',error);updateSyncStatus(navigator.onLine?'pending':'offline');emitUserData({coins:Number(localStorage.getItem('mathCoins'))||0});}
+}
+async function initFirebase(){
+  if(!isConfigured()){showLogin('尚未設定 Firebase。請先在 HTML 的 firebaseConfig 貼上 Web App Config。');loginBtn.disabled=true;return;}
+  try{
+    const [appModule,authModule,firestoreModule]=await Promise.all([
+      import('https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js'),
+      import('https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js')
+    ]);
+    sdk={...appModule,...authModule,...firestoreModule};
+    const app=sdk.initializeApp(firebaseConfig);auth=sdk.getAuth(app);db=sdk.getFirestore(app);
+    sdk.onAuthStateChanged(auth,user=>handleAuthState(user));
+  }catch(error){console.error('Firebase initialization failed:',error);showLogin('Firebase 載入失敗，請檢查網路後重新整理。');}
+}
+window.FirebaseSync={addCoinsToCloud,recordAnswer,updateBestStreak,resetCoinsInCloud,updateSyncStatus,saveLocalCache};
+loginForm.addEventListener('submit',async event=>{event.preventDefault();loginError.textContent='';const username=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value,validation=validateAccount(username,password);if(validation){loginError.textContent=validation;return;}loginBtn.disabled=true;loginBtn.textContent='登入中…';try{await loginUser(username,password);}catch(error){console.error('Login failed:',error);loginError.textContent=friendlyAuthError(error);}finally{loginBtn.disabled=false;loginBtn.textContent='登入';}});
+registerBtn.addEventListener('click',async()=>{loginError.textContent='';const username=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value,validation=validateAccount(username,password);if(validation){loginError.textContent=validation;return;}registerBtn.disabled=true;registerBtn.textContent='建立中…';try{await registerUser(username,password);}catch(error){console.error('Registration failed:',error);loginError.textContent=friendlyAuthError(error);}finally{registerBtn.disabled=false;registerBtn.textContent='建立帳號';}});
+document.getElementById('logoutBtn').addEventListener('click',()=>logoutUser().catch(error=>{console.error('Logout failed:',error);updateSyncStatus('pending');}));
+window.addEventListener('online',()=>flushPendingWrites());window.addEventListener('offline',()=>updateSyncStatus('offline'));
+initFirebase();
+</script>
+</body>
+</html>

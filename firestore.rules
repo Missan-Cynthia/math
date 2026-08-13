@@ -1,0 +1,16 @@
+rules_version = '2';
+
+// 注意：此 Firebase 專案與認字 APP 共用。
+// 若 Firebase Console 已有認字 APP 的規則，請只把下方
+// `match /users/{userId}/apps/math` 區塊合併進既有
+// `match /databases/{database}/documents` 內，不要整份覆蓋既有規則。
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/apps/math {
+      allow read, create, update: if request.auth != null
+                                  && request.auth.uid == userId;
+      allow delete: if false;
+    }
+  }
+}
